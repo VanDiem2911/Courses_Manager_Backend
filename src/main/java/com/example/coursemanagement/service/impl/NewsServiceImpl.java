@@ -37,6 +37,7 @@ public class NewsServiceImpl implements NewsService {
         news.setTitle(request.getTitle());
         news.setSummary(request.getSummary());
         news.setContent(request.getContent());
+        news.setImageUrl(request.getImageUrl());
         news.setAuthor(request.getAuthor() != null && !request.getAuthor().isBlank() ? request.getAuthor() : "Ban quản trị");
         news.setCreatedAt(LocalDateTime.now());
         news.setUpdatedAt(LocalDateTime.now());
@@ -49,6 +50,7 @@ public class NewsServiceImpl implements NewsService {
         news.setTitle(request.getTitle());
         news.setSummary(request.getSummary());
         news.setContent(request.getContent());
+        news.setImageUrl(request.getImageUrl());
         if (request.getAuthor() != null && !request.getAuthor().isBlank()) {
             news.setAuthor(request.getAuthor());
         }
@@ -73,6 +75,7 @@ public class NewsServiceImpl implements NewsService {
         r.setTitle(news.getTitle());
         r.setSummary(news.getSummary());
         r.setContent(news.getContent());
+        r.setImageUrl(news.getImageUrl());
         r.setAuthor(news.getAuthor());
         r.setCreatedAt(news.getCreatedAt());
         r.setUpdatedAt(news.getUpdatedAt());

@@ -14,5 +14,7 @@ public class NewsRequest {
     @NotBlank(message = "Nội dung tin tức không được rỗng")
     private String content;
 
+    private String imageUrl;
+
     private String author;
 }

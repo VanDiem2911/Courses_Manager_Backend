@@ -18,6 +18,8 @@ public class News {
 
     private String content;
 
+    private String imageUrl;
+
     private String author;
 
     private LocalDateTime createdAt;
