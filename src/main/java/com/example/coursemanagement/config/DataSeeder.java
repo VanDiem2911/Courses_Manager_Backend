@@ -45,7 +45,7 @@ public class DataSeeder implements CommandLineRunner {
                 System.out.println("Set default images for course: " + course.getName());
             }
             if (course.getLocation() == null || course.getLocation().isBlank()) {
-                course.setLocation("232 Nguyễn Thị Minh Khai");
+                course.setLocation("65 Nguyễn Bảo, Phường Vũng Tàu, Thành phố Hồ Chí Minh");
                 course.setUpdatedAt(LocalDateTime.now());
                 courseRepository.save(course);
             }
@@ -192,7 +192,7 @@ public class DataSeeder implements CommandLineRunner {
         c1.setTeacherId(t1.getId());
         c1.setTeacherName(t1.getFullName());
         c1.setSchedule("Thứ 2 - 4 - 6, 18:00 - 20:00");
-        c1.setLocation("232 Nguyễn Thị Minh Khai");
+        c1.setLocation("65 Nguyễn Bảo, Phường Vũng Tàu, Thành phố Hồ Chí Minh");
         c1.setStartDate(LocalDate.now().plusDays(10));
         c1.setEndDate(LocalDate.now().plusDays(70));
         c1.setTuitionFee(new BigDecimal("3500000"));
@@ -210,7 +210,7 @@ public class DataSeeder implements CommandLineRunner {
         c2.setTeacherId(t2.getId());
         c2.setTeacherName(t2.getFullName());
         c2.setSchedule("Thứ 3 - 5 - 7, 19:00 - 21:00");
-        c2.setLocation("232 Nguyễn Thị Minh Khai");
+        c2.setLocation("65 Nguyễn Bảo, Phường Vũng Tàu, Thành phố Hồ Chí Minh");
         c2.setStartDate(LocalDate.now().plusDays(15));
         c2.setEndDate(LocalDate.now().plusDays(90));
         c2.setTuitionFee(new BigDecimal("4500000"));
@@ -228,7 +228,7 @@ public class DataSeeder implements CommandLineRunner {
         c3.setTeacherId(t3.getId());
         c3.setTeacherName(t3.getFullName());
         c3.setSchedule("Thứ 7 - Chủ nhật, 08:00 - 12:00");
-        c3.setLocation("232 Nguyễn Thị Minh Khai");
+        c3.setLocation("65 Nguyễn Bảo, Phường Vũng Tàu, Thành phố Hồ Chí Minh");
         c3.setStartDate(LocalDate.now().plusDays(5));
         c3.setEndDate(LocalDate.now().plusDays(65));
         c3.setTuitionFee(new BigDecimal("5000000"));
@@ -246,7 +246,7 @@ public class DataSeeder implements CommandLineRunner {
         c4.setTeacherId(t1.getId());
         c4.setTeacherName(t1.getFullName());
         c4.setSchedule("Thứ 2 - 4, 20:00 - 22:00");
-        c4.setLocation("232 Nguyễn Thị Minh Khai");
+        c4.setLocation("65 Nguyễn Bảo, Phường Vũng Tàu, Thành phố Hồ Chí Minh");
         c4.setStartDate(LocalDate.now().plusDays(20));
         c4.setEndDate(LocalDate.now().plusDays(80));
         c4.setTuitionFee(new BigDecimal("4000000"));

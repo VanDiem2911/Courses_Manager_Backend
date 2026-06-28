@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CourseServiceImpl implements CourseService {
 
-    private static final String DEFAULT_LOCATION = "232 Nguyễn Thị Minh Khai";
+    private static final String DEFAULT_LOCATION = "65 Nguyễn Bảo, Phường Vũng Tàu, Thành phố Hồ Chí Minh";
 
     private final CourseRepository courseRepository;
     private final TeacherRepository teacherRepository;
