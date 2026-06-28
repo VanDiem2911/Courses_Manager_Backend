@@ -8,6 +8,7 @@ import com.example.coursemanagement.dto.response.UserResponse;
 import com.example.coursemanagement.exception.BadRequestException;
 import com.example.coursemanagement.model.Role;
 import com.example.coursemanagement.model.User;
+import com.example.coursemanagement.repository.StudentRepository;
 import com.example.coursemanagement.repository.UserRepository;
 import com.example.coursemanagement.security.JwtService;
 import com.example.coursemanagement.service.AuthService;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
@@ -39,6 +41,7 @@ public class AuthServiceImpl implements AuthService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setPhone(request.getPhone());
+        user.setDateOfBirth(request.getDateOfBirth());
         user.setRole(Role.STUDENT);
         user.setEnabled(true);
         user.setCreatedAt(LocalDateTime.now());
@@ -107,6 +110,13 @@ public class AuthServiceImpl implements AuthService {
 
         user.setUpdatedAt(LocalDateTime.now());
         User saved = userRepository.save(user);
+        studentRepository.findByEmail(saved.getEmail()).ifPresent(student -> {
+            student.setFullName(saved.getFullName());
+            student.setPhone(saved.getPhone());
+            student.setDateOfBirth(saved.getDateOfBirth());
+            student.setUpdatedAt(LocalDateTime.now());
+            studentRepository.save(student);
+        });
 
         UserResponse response = new UserResponse();
         response.setId(saved.getId());
@@ -121,4 +131,3 @@ public class AuthServiceImpl implements AuthService {
         return response;
     }
 }
-

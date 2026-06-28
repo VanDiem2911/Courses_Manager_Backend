@@ -25,6 +25,8 @@ public class Course {
 
     private String schedule;
 
+    private String location;
+
     private List<String> images;
 
     private LocalDate startDate;

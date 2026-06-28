@@ -31,6 +31,12 @@ public class DataSeeder implements CommandLineRunner {
             "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&auto=format&fit=crop&q=60",
             "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=600&auto=format&fit=crop&q=60"
         );
+        List<String> defaultTeacherImages = List.of(
+            "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&auto=format&fit=crop&q=60",
+            "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&auto=format&fit=crop&q=60",
+            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&auto=format&fit=crop&q=60",
+            "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&auto=format&fit=crop&q=60"
+        );
 
         courseRepository.findAll().forEach(course -> {
             if (course.getImages() == null || course.getImages().isEmpty()) {
@@ -38,7 +44,21 @@ public class DataSeeder implements CommandLineRunner {
                 courseRepository.save(course);
                 System.out.println("Set default images for course: " + course.getName());
             }
+            if (course.getLocation() == null || course.getLocation().isBlank()) {
+                course.setLocation("232 Nguyễn Thị Minh Khai");
+                course.setUpdatedAt(LocalDateTime.now());
+                courseRepository.save(course);
+            }
         });
+        List<Teacher> existingTeachers = teacherRepository.findAll();
+        for (int i = 0; i < existingTeachers.size(); i++) {
+            Teacher teacher = existingTeachers.get(i);
+            if (teacher.getImageUrl() == null || teacher.getImageUrl().isBlank()) {
+                teacher.setImageUrl(defaultTeacherImages.get(i % defaultTeacherImages.size()));
+                teacher.setUpdatedAt(LocalDateTime.now());
+                teacherRepository.save(teacher);
+            }
+        }
 
         if (userRepository.count() > 0) return;
 
@@ -84,6 +104,7 @@ public class DataSeeder implements CommandLineRunner {
         t0.setFullName("Nguyễn Văn Giáo");
         t0.setEmail("teacher@gmail.com");
         t0.setPhone("0900000002");
+        t0.setImageUrl(defaultTeacherImages.get(0));
         t0.setSpecialization("Cơ sở dữ liệu");
         t0.setExperience("8 năm");
         t0.setDescription("Giảng viên cơ sở dữ liệu và hệ quản trị CSDL.");
@@ -96,6 +117,7 @@ public class DataSeeder implements CommandLineRunner {
         t1.setFullName("Nguyễn Văn An");
         t1.setEmail("an.nguyen@hudi.edu.vn");
         t1.setPhone("0911000001");
+        t1.setImageUrl(defaultTeacherImages.get(1));
         t1.setSpecialization("Lập trình Web");
         t1.setExperience("5 năm");
         t1.setDescription("Giảng viên lập trình web với kinh nghiệm thực tế tại nhiều công ty lớn.");
@@ -119,6 +141,7 @@ public class DataSeeder implements CommandLineRunner {
         t2.setFullName("Lê Thị Bình");
         t2.setEmail("binh.le@hudi.edu.vn");
         t2.setPhone("0911000002");
+        t2.setImageUrl(defaultTeacherImages.get(2));
         t2.setSpecialization("Khoa học dữ liệu");
         t2.setExperience("7 năm");
         t2.setDescription("Chuyên gia về Machine Learning và Data Science.");
@@ -142,6 +165,7 @@ public class DataSeeder implements CommandLineRunner {
         t3.setFullName("Phạm Văn Cường");
         t3.setEmail("cuong.pham@hudi.edu.vn");
         t3.setPhone("0911000003");
+        t3.setImageUrl(defaultTeacherImages.get(3));
         t3.setSpecialization("An ninh mạng");
         t3.setExperience("10 năm");
         t3.setDescription("Chuyên gia bảo mật với nhiều chứng chỉ quốc tế CISSP, CEH.");
@@ -168,6 +192,7 @@ public class DataSeeder implements CommandLineRunner {
         c1.setTeacherId(t1.getId());
         c1.setTeacherName(t1.getFullName());
         c1.setSchedule("Thứ 2 - 4 - 6, 18:00 - 20:00");
+        c1.setLocation("232 Nguyễn Thị Minh Khai");
         c1.setStartDate(LocalDate.now().plusDays(10));
         c1.setEndDate(LocalDate.now().plusDays(70));
         c1.setTuitionFee(new BigDecimal("3500000"));
@@ -185,6 +210,7 @@ public class DataSeeder implements CommandLineRunner {
         c2.setTeacherId(t2.getId());
         c2.setTeacherName(t2.getFullName());
         c2.setSchedule("Thứ 3 - 5 - 7, 19:00 - 21:00");
+        c2.setLocation("232 Nguyễn Thị Minh Khai");
         c2.setStartDate(LocalDate.now().plusDays(15));
         c2.setEndDate(LocalDate.now().plusDays(90));
         c2.setTuitionFee(new BigDecimal("4500000"));
@@ -202,6 +228,7 @@ public class DataSeeder implements CommandLineRunner {
         c3.setTeacherId(t3.getId());
         c3.setTeacherName(t3.getFullName());
         c3.setSchedule("Thứ 7 - Chủ nhật, 08:00 - 12:00");
+        c3.setLocation("232 Nguyễn Thị Minh Khai");
         c3.setStartDate(LocalDate.now().plusDays(5));
         c3.setEndDate(LocalDate.now().plusDays(65));
         c3.setTuitionFee(new BigDecimal("5000000"));
@@ -219,6 +246,7 @@ public class DataSeeder implements CommandLineRunner {
         c4.setTeacherId(t1.getId());
         c4.setTeacherName(t1.getFullName());
         c4.setSchedule("Thứ 2 - 4, 20:00 - 22:00");
+        c4.setLocation("232 Nguyễn Thị Minh Khai");
         c4.setStartDate(LocalDate.now().plusDays(20));
         c4.setEndDate(LocalDate.now().plusDays(80));
         c4.setTuitionFee(new BigDecimal("4000000"));

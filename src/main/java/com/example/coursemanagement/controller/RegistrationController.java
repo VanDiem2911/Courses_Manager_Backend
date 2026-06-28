@@ -43,8 +43,10 @@ public class RegistrationController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<?>> register(@Valid @RequestBody RegistrationRequest request) {
-        return ResponseEntity.ok(ApiResponse.success("Đăng ký khóa học thành công", registrationService.register(request)));
+    public ResponseEntity<ApiResponse<?>> register(@Valid @RequestBody RegistrationRequest request,
+                                                    @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(ApiResponse.success("Đăng ký khóa học thành công",
+                registrationService.register(request, userDetails.getUsername())));
     }
 
     @PutMapping("/{id}/cancel")

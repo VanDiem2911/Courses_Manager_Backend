@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Data
 public class RegisterRequest {
     @NotBlank(message = "Họ tên không được rỗng")
@@ -20,4 +22,6 @@ public class RegisterRequest {
 
     @NotBlank(message = "Số điện thoại không được rỗng")
     private String phone;
+
+    private LocalDate dateOfBirth;
 }

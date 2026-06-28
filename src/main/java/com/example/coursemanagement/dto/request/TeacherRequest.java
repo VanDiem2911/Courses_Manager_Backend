@@ -16,6 +16,8 @@ public class TeacherRequest {
     @NotBlank(message = "Số điện thoại không được rỗng")
     private String phone;
 
+    private String imageUrl;
+
     private String specialization;
 
     private String experience;

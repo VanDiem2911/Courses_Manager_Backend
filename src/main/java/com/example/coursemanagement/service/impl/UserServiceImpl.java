@@ -5,6 +5,7 @@ import com.example.coursemanagement.dto.response.UserResponse;
 import com.example.coursemanagement.exception.BadRequestException;
 import com.example.coursemanagement.exception.ResourceNotFoundException;
 import com.example.coursemanagement.model.User;
+import com.example.coursemanagement.repository.StudentRepository;
 import com.example.coursemanagement.repository.UserRepository;
 import com.example.coursemanagement.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -56,6 +58,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse update(String id, UserRequest request) {
         User user = findById(id);
+        String oldEmail = user.getEmail();
 
         if (!user.getEmail().equals(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("Email đã được sử dụng");
@@ -73,7 +76,17 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
-        return toResponse(userRepository.save(user));
+        User savedUser = userRepository.save(user);
+        studentRepository.findByEmail(oldEmail).ifPresent(student -> {
+            student.setFullName(savedUser.getFullName());
+            student.setEmail(savedUser.getEmail());
+            student.setPhone(savedUser.getPhone());
+            student.setDateOfBirth(savedUser.getDateOfBirth());
+            student.setUpdatedAt(LocalDateTime.now());
+            studentRepository.save(student);
+        });
+
+        return toResponse(savedUser);
     }
 
     @Override

@@ -18,6 +18,8 @@ public class Teacher {
 
     private String phone;
 
+    private String imageUrl;
+
     private String specialization;
 
     private String experience;

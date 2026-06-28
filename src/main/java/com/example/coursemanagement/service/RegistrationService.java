@@ -11,6 +11,6 @@ public interface RegistrationService {
     List<RegistrationResponse> getByCourse(String courseId);
     List<RegistrationResponse> getMyCourses(String email);
     List<RegistrationResponse> getTeacherCourses(String email);
-    RegistrationResponse register(RegistrationRequest request);
+    RegistrationResponse register(RegistrationRequest request, String currentUserEmail);
     RegistrationResponse cancel(String id, String currentUserEmail);
 }

@@ -4,9 +4,11 @@ import com.example.coursemanagement.dto.request.TeacherRequest;
 import com.example.coursemanagement.dto.response.TeacherResponse;
 import com.example.coursemanagement.exception.BadRequestException;
 import com.example.coursemanagement.exception.ResourceNotFoundException;
+import com.example.coursemanagement.model.Course;
 import com.example.coursemanagement.model.Role;
 import com.example.coursemanagement.model.Teacher;
 import com.example.coursemanagement.model.User;
+import com.example.coursemanagement.repository.CourseRepository;
 import com.example.coursemanagement.repository.TeacherRepository;
 import com.example.coursemanagement.repository.UserRepository;
 import com.example.coursemanagement.service.TeacherService;
@@ -26,6 +28,7 @@ public class TeacherServiceImpl implements TeacherService {
     private final TeacherRepository teacherRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CourseRepository courseRepository;
 
     @Override
     public List<TeacherResponse> getAll() {
@@ -51,6 +54,7 @@ public class TeacherServiceImpl implements TeacherService {
         teacher.setFullName(request.getFullName());
         teacher.setEmail(request.getEmail());
         teacher.setPhone(request.getPhone());
+        teacher.setImageUrl(request.getImageUrl());
         teacher.setSpecialization(request.getSpecialization());
         teacher.setExperience(request.getExperience());
         teacher.setDescription(request.getDescription());
@@ -87,6 +91,7 @@ public class TeacherServiceImpl implements TeacherService {
         teacher.setFullName(request.getFullName());
         teacher.setEmail(request.getEmail());
         teacher.setPhone(request.getPhone());
+        teacher.setImageUrl(request.getImageUrl());
         teacher.setSpecialization(request.getSpecialization());
         teacher.setExperience(request.getExperience());
         teacher.setDescription(request.getDescription());
@@ -101,6 +106,13 @@ public class TeacherServiceImpl implements TeacherService {
             user.setUpdatedAt(LocalDateTime.now());
             userRepository.save(user);
         });
+
+        List<Course> courses = courseRepository.findByTeacherId(savedTeacher.getId());
+        courses.forEach(course -> {
+            course.setTeacherName(savedTeacher.getFullName());
+            course.setUpdatedAt(LocalDateTime.now());
+        });
+        courseRepository.saveAll(courses);
 
         return toResponse(savedTeacher);
     }
@@ -139,6 +151,7 @@ public class TeacherServiceImpl implements TeacherService {
         r.setFullName(teacher.getFullName());
         r.setEmail(teacher.getEmail());
         r.setPhone(teacher.getPhone());
+        r.setImageUrl(teacher.getImageUrl());
         r.setSpecialization(teacher.getSpecialization());
         r.setExperience(teacher.getExperience());
         r.setDescription(teacher.getDescription());

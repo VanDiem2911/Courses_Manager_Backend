@@ -16,6 +16,7 @@ public class CourseResponse {
     private String teacherId;
     private String teacherName;
     private String schedule;
+    private String location;
     private List<String> images;
     private LocalDate startDate;
     private LocalDate endDate;

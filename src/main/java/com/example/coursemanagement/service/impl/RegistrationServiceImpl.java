@@ -9,6 +9,11 @@ import com.example.coursemanagement.model.*;
 import com.example.coursemanagement.repository.*;
 import com.example.coursemanagement.service.RegistrationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,6 +29,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
     private final UserRepository userRepository;
+    private final MongoTemplate mongoTemplate;
 
     @Override
     public List<RegistrationResponse> getAll() {
@@ -73,9 +79,11 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     @Override
-    public RegistrationResponse register(RegistrationRequest request) {
+    public synchronized RegistrationResponse register(RegistrationRequest request, String currentUserEmail) {
         Course course = courseRepository.findById(request.getCourseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khóa học"));
+        User currentUser = userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
 
         if (course.getStatus() == CourseStatus.CLOSED) {
             throw new BadRequestException("Khóa học đã đóng, không thể đăng ký");
@@ -83,46 +91,86 @@ public class RegistrationServiceImpl implements RegistrationService {
         if (course.getStatus() == CourseStatus.FULL) {
             throw new BadRequestException("Khóa học đã đầy, không thể đăng ký");
         }
+        if (course.getRegisteredCount() >= course.getMaxStudents()) {
+            mongoTemplate.updateFirst(
+                    new Query(Criteria.where("_id").is(course.getId()).and("status").is(CourseStatus.OPEN)),
+                    new Update().set("status", CourseStatus.FULL).set("updatedAt", LocalDateTime.now()),
+                    Course.class);
+            throw new BadRequestException("Khóa học đã đầy, không thể đăng ký");
+        }
 
         // Check duplicate registration
         registrationRepository.findByStudentEmailAndCourseIdAndStatus(
-                request.getEmail(), request.getCourseId(), RegistrationStatus.REGISTERED)
+                currentUserEmail, request.getCourseId(), RegistrationStatus.REGISTERED)
                 .ifPresent(r -> {
                     throw new BadRequestException("Email này đã đăng ký khóa học, không thể đăng ký lại");
                 });
 
         // Get or create student
-        Student student = studentRepository.findByEmail(request.getEmail())
+        Student student = studentRepository.findByEmail(currentUserEmail)
                 .orElseGet(() -> {
                     Student s = new Student();
-                    s.setFullName(request.getFullName());
-                    s.setEmail(request.getEmail());
-                    s.setPhone(request.getPhone());
-                    s.setDateOfBirth(request.getDateOfBirth());
+                    s.setFullName(currentUser.getFullName());
+                    s.setEmail(currentUser.getEmail());
+                    s.setPhone(currentUser.getPhone());
+                    s.setDateOfBirth(request.getDateOfBirth() != null ? request.getDateOfBirth() : currentUser.getDateOfBirth());
                     s.setAddress(request.getAddress());
                     s.setCreatedAt(LocalDateTime.now());
                     s.setUpdatedAt(LocalDateTime.now());
                     return studentRepository.save(s);
                 });
+        student.setFullName(currentUser.getFullName());
+        student.setEmail(currentUser.getEmail());
+        student.setPhone(currentUser.getPhone());
+        student.setDateOfBirth(request.getDateOfBirth() != null ? request.getDateOfBirth() : currentUser.getDateOfBirth());
+        student.setAddress(request.getAddress());
+        student.setUpdatedAt(LocalDateTime.now());
+        student = studentRepository.save(student);
+
+        LocalDateTime now = LocalDateTime.now();
+        Query reserveSeatQuery = new Query(Criteria.where("_id").is(course.getId())
+                .and("status").is(CourseStatus.OPEN)
+                .and("registeredCount").lt(course.getMaxStudents()));
+        Update reserveSeatUpdate = new Update()
+                .inc("registeredCount", 1)
+                .set("updatedAt", now);
+        Course reservedCourse = mongoTemplate.findAndModify(
+                reserveSeatQuery,
+                reserveSeatUpdate,
+                FindAndModifyOptions.options().returnNew(true),
+                Course.class);
+
+        if (reservedCourse == null) {
+            courseRepository.findById(course.getId()).ifPresent(latestCourse -> {
+                if (latestCourse.getStatus() == CourseStatus.OPEN
+                        && latestCourse.getRegisteredCount() >= latestCourse.getMaxStudents()) {
+                    mongoTemplate.updateFirst(
+                            new Query(Criteria.where("_id").is(latestCourse.getId()).and("status").is(CourseStatus.OPEN)),
+                            new Update().set("status", CourseStatus.FULL).set("updatedAt", now),
+                            Course.class);
+                }
+            });
+            throw new BadRequestException("Khóa học đã đầy, không thể đăng ký");
+        }
+
+        if (reservedCourse.getRegisteredCount() >= reservedCourse.getMaxStudents()) {
+            mongoTemplate.updateFirst(
+                    new Query(Criteria.where("_id").is(reservedCourse.getId()).and("status").is(CourseStatus.OPEN)),
+                    new Update().set("status", CourseStatus.FULL).set("updatedAt", now),
+                    Course.class);
+        }
 
         // Create registration
         Registration registration = new Registration();
-        registration.setCourseId(course.getId());
-        registration.setCourseName(course.getName());
+        registration.setCourseId(reservedCourse.getId());
+        registration.setCourseName(reservedCourse.getName());
         registration.setStudentId(student.getId());
         registration.setStudentName(student.getFullName());
         registration.setStudentEmail(student.getEmail());
         registration.setStudentPhone(student.getPhone());
         registration.setStatus(RegistrationStatus.REGISTERED);
-        registration.setRegisteredAt(LocalDateTime.now());
+        registration.setRegisteredAt(now);
         registrationRepository.save(registration);
-
-        // Update course count
-        course.setRegisteredCount(course.getRegisteredCount() + 1);
-        if (course.getRegisteredCount() >= course.getMaxStudents()) {
-            course.setStatus(CourseStatus.FULL);
-        }
-        courseRepository.save(course);
 
         return toResponse(registration);
     }
@@ -148,15 +196,23 @@ public class RegistrationServiceImpl implements RegistrationService {
         registration.setCanceledAt(LocalDateTime.now());
         registrationRepository.save(registration);
 
-        // Update course count
-        Course course = courseRepository.findById(registration.getCourseId()).orElse(null);
-        if (course != null) {
-            int newCount = Math.max(0, course.getRegisteredCount() - 1);
-            course.setRegisteredCount(newCount);
-            if (course.getStatus() == CourseStatus.FULL && newCount < course.getMaxStudents()) {
-                course.setStatus(CourseStatus.OPEN);
-            }
-            courseRepository.save(course);
+        Query releaseSeatQuery = new Query(Criteria.where("_id").is(registration.getCourseId())
+                .and("registeredCount").gt(0));
+        Update releaseSeatUpdate = new Update()
+                .inc("registeredCount", -1)
+                .set("updatedAt", LocalDateTime.now());
+        Course updatedCourse = mongoTemplate.findAndModify(
+                releaseSeatQuery,
+                releaseSeatUpdate,
+                FindAndModifyOptions.options().returnNew(true),
+                Course.class);
+        if (updatedCourse != null
+                && updatedCourse.getStatus() == CourseStatus.FULL
+                && updatedCourse.getRegisteredCount() < updatedCourse.getMaxStudents()) {
+            mongoTemplate.updateFirst(
+                    new Query(Criteria.where("_id").is(updatedCourse.getId()).and("status").is(CourseStatus.FULL)),
+                    new Update().set("status", CourseStatus.OPEN).set("updatedAt", LocalDateTime.now()),
+                    Course.class);
         }
 
         return toResponse(registration);

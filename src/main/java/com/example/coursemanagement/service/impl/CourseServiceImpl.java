@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CourseServiceImpl implements CourseService {
 
+    private static final String DEFAULT_LOCATION = "232 Nguyễn Thị Minh Khai";
+
     private final CourseRepository courseRepository;
     private final TeacherRepository teacherRepository;
     private final UserRepository userRepository;
@@ -51,6 +53,7 @@ public class CourseServiceImpl implements CourseService {
         course.setName(request.getName());
         course.setDescription(request.getDescription());
         course.setSchedule(request.getSchedule());
+        course.setLocation(resolveLocation(request.getLocation()));
         course.setImages(request.getImages());
         course.setStartDate(request.getStartDate());
         course.setEndDate(request.getEndDate());
@@ -99,6 +102,7 @@ public class CourseServiceImpl implements CourseService {
         course.setName(request.getName());
         course.setDescription(request.getDescription());
         course.setSchedule(request.getSchedule());
+        course.setLocation(resolveLocation(request.getLocation()));
         course.setImages(request.getImages());
         course.setStartDate(request.getStartDate());
         course.setEndDate(request.getEndDate());
@@ -198,6 +202,7 @@ public class CourseServiceImpl implements CourseService {
         r.setTeacherId(course.getTeacherId());
         r.setTeacherName(course.getTeacherName());
         r.setSchedule(course.getSchedule());
+        r.setLocation(course.getLocation());
         r.setImages(course.getImages());
         r.setStartDate(course.getStartDate());
         r.setEndDate(course.getEndDate());
@@ -208,5 +213,9 @@ public class CourseServiceImpl implements CourseService {
         r.setCreatedAt(course.getCreatedAt());
         r.setUpdatedAt(course.getUpdatedAt());
         return r;
+    }
+
+    private String resolveLocation(String location) {
+        return StringUtils.hasText(location) ? location : DEFAULT_LOCATION;
     }
 }
