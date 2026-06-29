@@ -4,6 +4,7 @@ import com.example.coursemanagement.dto.request.UserRequest;
 import com.example.coursemanagement.dto.response.UserResponse;
 import com.example.coursemanagement.exception.BadRequestException;
 import com.example.coursemanagement.exception.ResourceNotFoundException;
+import com.example.coursemanagement.model.Role;
 import com.example.coursemanagement.model.User;
 import com.example.coursemanagement.repository.StudentRepository;
 import com.example.coursemanagement.repository.UserRepository;
@@ -59,6 +60,10 @@ public class UserServiceImpl implements UserService {
     public UserResponse update(String id, UserRequest request) {
         User user = findById(id);
         String oldEmail = user.getEmail();
+
+        if (user.getRole() == Role.ADMIN && request.getRole() != Role.ADMIN) {
+            throw new BadRequestException("Không thể hạ quyền của tài khoản Admin");
+        }
 
         if (!user.getEmail().equals(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("Email đã được sử dụng");

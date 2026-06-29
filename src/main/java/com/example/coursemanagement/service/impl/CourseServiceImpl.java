@@ -49,6 +49,10 @@ public class CourseServiceImpl implements CourseService {
             throw new BadRequestException("Ngày bắt đầu không được sau ngày kết thúc");
         }
 
+        if (request.getStartDate() != null && !request.getStartDate().isAfter(java.time.LocalDate.now())) {
+            throw new BadRequestException("Ngày bắt đầu phải sau ngày hiện tại");
+        }
+
         Course course = new Course();
         course.setName(request.getName());
         course.setDescription(request.getDescription());
@@ -97,6 +101,22 @@ public class CourseServiceImpl implements CourseService {
         if (request.getStartDate() != null && request.getEndDate() != null
                 && request.getStartDate().isAfter(request.getEndDate())) {
             throw new BadRequestException("Ngày bắt đầu không được sau ngày kết thúc");
+        }
+
+        if (course.getRegisteredCount() > 0) {
+            boolean tuitionChanged = false;
+            java.math.BigDecimal oldFee = course.getTuitionFee();
+            java.math.BigDecimal newFee = request.getTuitionFee();
+            if (oldFee == null && newFee != null) {
+                tuitionChanged = true;
+            } else if (oldFee != null && newFee == null) {
+                tuitionChanged = true;
+            } else if (oldFee != null && newFee != null && oldFee.compareTo(newFee) != 0) {
+                tuitionChanged = true;
+            }
+            if (tuitionChanged) {
+                throw new BadRequestException("Không thể sửa học phí của khóa học đã có học viên đăng ký");
+            }
         }
 
         course.setName(request.getName());
